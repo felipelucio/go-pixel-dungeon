@@ -3,6 +3,7 @@ package scenes
 import (
 	"errors"
 	"fmt"
+	"image/color"
 	"log"
 
 	"github.com/felipelucio/go-pixel-dungeon/components"
@@ -20,7 +21,7 @@ type TestScene struct {
 	player *core.Entity
 	ts     core.Tileset
 	tm     core.Tilemap
-	cam    core.Camera
+	camera core.Camera
 }
 
 func (scene *TestScene) Init(state *core.GameState) error {
@@ -42,7 +43,7 @@ func (scene *TestScene) Init(state *core.GameState) error {
 	scene.ts = ts
 	scene.tm = core.NewTilemap(&scene.ts, 768/2/16, 432/2/16)
 
-	scene.cam = core.NewCamera(ebiten.NewImage(800, 600), 768, 432)
+	scene.camera = core.NewCamera(768, 432, 0.5, 2.0)
 
 	return nil
 }
@@ -56,7 +57,7 @@ func (scene *TestScene) Resume() {
 }
 
 func (scene *TestScene) Update() error {
-	dir := core.NewVector2[float64](0.0, 0.0)
+	dir := core.NewVector2(0.0, 0.0)
 	if inpututil.IsKeyJustPressed(ebiten.KeyA) {
 		dir.X = -1.0
 	} else if inpututil.IsKeyJustPressed(ebiten.KeyD) {
@@ -68,37 +69,49 @@ func (scene *TestScene) Update() error {
 		dir.Y = 1.0
 	}
 
-	if dir.X != 0 || dir.Y != 0 {
-		scene.cam.SmoothMoveBy(int(64*dir.X), int(64*dir.Y), 0.2)
+	if inpututil.IsKeyJustPressed(ebiten.KeyUp) || inpututil.IsKeyJustPressed(ebiten.KeyArrowUp) {
+		scene.camera.ScaleBy(0.50)
+	} else if inpututil.IsKeyJustPressed(ebiten.KeyDown) || inpututil.IsKeyJustPressed(ebiten.KeyArrowDown) {
+		scene.camera.ScaleBy(-0.50)
 	}
-	scene.cam.Update(1.0 / 60.0)
+
+	if dir.X != 0 || dir.Y != 0 {
+		scene.camera.SmoothMoveBy(int(16*dir.X), int(16*dir.Y), 0.2)
+	}
+
+	scene.camera.Update(1.0 / 60.0)
 	return scene.world.Update()
 }
 
 func (scene *TestScene) Draw(screen *ebiten.Image) error {
-	ebitenutil.DebugPrint(screen, "Hello, World!")
+	buff := scene.camera.GetBuffer()
+	buff.Clear()
+	buff.Fill(color.RGBA{255, 128, 128, 255})
+	ebitenutil.DebugPrint(buff, "Hello, World!")
 	// comp := scene.player.GetComponent("Position")
 	// pos_comp, ok := comp.(*components.Position)
 	// if ok {
 	// 	p_str := fmt.Sprintf("Player: (%d, %d)", pos_comp.X, pos_comp.Y)
-	// 	ebitenutil.DebugPrintAt(screen, p_str, 0, 20)
+	// 	ebitenutil.DebugPrintAt(buff, p_str, 0, 20)
 	// }
 
 	mapH := scene.tm.GetHeight()
 	mapW := scene.tm.GetWidth()
 	tileH := scene.ts.GetTileHeight()
 	tileW := scene.ts.GetTileWidth()
-	camX, camY := scene.cam.GetPosition()
+	camX, camY := scene.camera.GetPosition()
 	for z := range 3 {
 		_ = z
 		for y := range mapH {
 			for x := range mapW {
 				op := &ebiten.DrawImageOptions{}
-				op.GeoM.Translate(float64((x*tileW)+camX), float64((y*tileH)+camY))
-				screen.DrawImage(scene.tm.GetTile(x, y), op)
+				op.GeoM.Translate(float64((x*tileW)-camX), float64((y*tileH)-camY))
+				buff.DrawImage(scene.tm.GetTile(x, y), op)
 			}
 		}
 	}
+
+	scene.camera.Draw(screen)
 
 	return nil
 }
