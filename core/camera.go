@@ -44,13 +44,22 @@ func (cam *Camera) resize() {
 }
 
 func (cam *Camera) ScaleTo(scale float64) {
-	cam.scale = math.Max(cam.minScale, math.Min(cam.maxScale, cam.scale))
+	cam.scale = math.Max(cam.minScale, math.Min(cam.maxScale, scale))
 	cam.resize()
 }
 
 func (cam *Camera) ScaleBy(scaleDt float64) {
 	cam.scale = math.Max(cam.minScale, math.Min(cam.maxScale, cam.scale+scaleDt))
 	cam.resize()
+}
+
+func (cam *Camera) SmoothScaleBy(scaleDt float64, time float64) {
+	cam.tweenScale = NewTween(
+		cam.scale,
+		cam.scale+scaleDt,
+		time,
+		TweenEaseInOut,
+	)
 }
 
 func (cam *Camera) MoveTo(x int, y int) {
@@ -81,7 +90,7 @@ func (cam *Camera) Update(delta float64) {
 
 	if !cam.tweenScale.IsFinished() {
 		newScale, _ := cam.tweenScale.Update(delta)
-		cam.scale = newScale
+		cam.ScaleTo(newScale)
 	}
 }
 

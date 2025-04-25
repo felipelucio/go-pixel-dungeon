@@ -70,9 +70,9 @@ func (scene *TestScene) Update() error {
 	}
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyUp) || inpututil.IsKeyJustPressed(ebiten.KeyArrowUp) {
-		scene.camera.ScaleBy(0.50)
+		scene.camera.SmoothScaleBy(0.25, 0.2)
 	} else if inpututil.IsKeyJustPressed(ebiten.KeyDown) || inpututil.IsKeyJustPressed(ebiten.KeyArrowDown) {
-		scene.camera.ScaleBy(-0.50)
+		scene.camera.SmoothScaleBy(-0.25, 0.2)
 	}
 
 	if dir.X != 0 || dir.Y != 0 {
@@ -100,14 +100,11 @@ func (scene *TestScene) Draw(screen *ebiten.Image) error {
 	tileH := scene.ts.GetTileHeight()
 	tileW := scene.ts.GetTileWidth()
 	camX, camY := scene.camera.GetPosition()
-	for z := range 3 {
-		_ = z
-		for y := range mapH {
-			for x := range mapW {
-				op := &ebiten.DrawImageOptions{}
-				op.GeoM.Translate(float64((x*tileW)-camX), float64((y*tileH)-camY))
-				buff.DrawImage(scene.tm.GetTile(x, y), op)
-			}
+	for y := range mapH {
+		for x := range mapW {
+			op := &ebiten.DrawImageOptions{}
+			op.GeoM.Translate(float64((x*tileW)-camX), float64((y*tileH)-camY))
+			buff.DrawImage(scene.tm.GetTile(x, y), op)
 		}
 	}
 

@@ -16,7 +16,7 @@ type Game struct {
 
 func (g *Game) Update() error {
 
-	ebiten.SetWindowTitle(fmt.Sprintf("%s (FPS: %.2f)", g.Title, ebiten.ActualFPS()))
+	ebiten.SetWindowTitle(fmt.Sprintf("%s (FPS: %.2f | TPS: %.2f)", g.Title, ebiten.ActualFPS(), ebiten.ActualTPS()))
 	return core.UpdateScene()
 }
 
