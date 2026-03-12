@@ -3,7 +3,7 @@ package core
 import "github.com/hajimehoshi/ebiten/v2"
 
 type Scene interface {
-	Init(state *GameState) error
+	Init() error
 	Pause()
 	Resume()
 	Update() error
@@ -11,44 +11,45 @@ type Scene interface {
 	Destroy()
 }
 
-var (
-	sceneStack = make([]Scene, 5)
-	gameState  *GameState
-)
+type SceneManager struct {
+	sceneStack []Scene
+}
 
-func SceneManagerRegisterGameState(gs *GameState) {
-	gameState = gs
+func NewSceneManager() *SceneManager {
+	return &SceneManager{
+		sceneStack: make([]Scene, 5),
+	}
 }
 
 // Scene returns the current scene.
-func CurrScene() Scene {
-	return sceneStack[len(sceneStack)-1]
+func (sm *SceneManager) CurrScene() Scene {
+	return sm.sceneStack[len(sm.sceneStack)-1]
 }
 
-func SwitchToScene(scene Scene) {
-	currentScene := CurrScene()
+func (sm *SceneManager) SwitchToScene(scene Scene) {
+	currentScene := sm.CurrScene()
 	for currentScene != nil {
 		currentScene.Destroy()
 	}
-	sceneStack = sceneStack[:0]
-	sceneStack = append(sceneStack, scene)
-	scene.Init(gameState)
+	sm.sceneStack = sm.sceneStack[:0]
+	sm.sceneStack = append(sm.sceneStack, scene)
+	scene.Init()
 	scene.Resume()
 }
 
-func PushScene(scene Scene) {
-	currentScene := CurrScene()
+func (sm *SceneManager) PushScene(scene Scene) {
+	currentScene := sm.CurrScene()
 	for currentScene != nil {
 		currentScene.Pause()
 	}
-	scene.Init(gameState)
-	sceneStack = append(sceneStack, scene)
+	scene.Init()
+	sm.sceneStack = append(sm.sceneStack, scene)
 	scene.Resume()
 }
 
 // Update is the function called every frame by ebiten.
-func UpdateScene() error {
-	currentScene := CurrScene()
+func (sm *SceneManager) UpdateScene() error {
+	currentScene := sm.CurrScene()
 	if currentScene == nil {
 		return nil
 	}
@@ -56,8 +57,8 @@ func UpdateScene() error {
 	return currentScene.Update()
 }
 
-func DrawScene(screen *ebiten.Image) error {
-	currentScene := CurrScene()
+func (sm *SceneManager) DrawScene(screen *ebiten.Image) error {
+	currentScene := sm.CurrScene()
 	if currentScene == nil {
 		return nil
 	}

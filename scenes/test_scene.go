@@ -11,7 +11,6 @@ import (
 	"github.com/felipelucio/go-pixel-dungeon/game"
 	"github.com/felipelucio/go-pixel-dungeon/systems"
 	"github.com/hajimehoshi/ebiten/v2"
-	"github.com/hajimehoshi/ebiten/v2/ebitenutil"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
@@ -24,8 +23,8 @@ type TestScene struct {
 	camera core.Camera
 }
 
-func (scene *TestScene) Init(state *core.GameState) error {
-	scene.gs = state
+func (scene *TestScene) Init() error {
+	scene.gs = &game.GetSession().Game().GameState
 	scene.world = game.NewWorld()
 	ok := scene.world.AddSystem(systems.MoveSystem, 10)
 	if ok != nil {
@@ -41,22 +40,23 @@ func (scene *TestScene) Init(state *core.GameState) error {
 		log.Fatal(err)
 	}
 	scene.ts = ts
-	scene.tm = core.NewTilemap(&scene.ts, 768/2/16, 432/2/16)
+	scene.tm = core.NewTilemap(&scene.ts, 512, 512)
 
-	scene.camera = core.NewCamera(768, 432, 0.5, 2.0)
+	scene.camera = core.NewCamera(768, 432, 0.5, 2.0, true)
 
 	return nil
 }
 
 func (scene *TestScene) Pause() {
-
 }
 
 func (scene *TestScene) Resume() {
-
 }
 
 func (scene *TestScene) Update() error {
+	g := game.GetSession().Game()
+	ebiten.SetWindowTitle(fmt.Sprintf("%s (FPS: %.2f | TPS: %.2f)", g.Title, ebiten.ActualFPS(), ebiten.ActualTPS()))
+
 	dir := core.NewVector2(0.0, 0.0)
 	if inpututil.IsKeyJustPressed(ebiten.KeyA) {
 		dir.X = -1.0
@@ -87,32 +87,51 @@ func (scene *TestScene) Draw(screen *ebiten.Image) error {
 	buff := scene.camera.GetBuffer()
 	buff.Clear()
 	buff.Fill(color.RGBA{255, 128, 128, 255})
-	ebitenutil.DebugPrint(buff, "Hello, World!")
 	// comp := scene.player.GetComponent("Position")
 	// pos_comp, ok := comp.(*components.Position)
 	// if ok {
 	// 	p_str := fmt.Sprintf("Player: (%d, %d)", pos_comp.X, pos_comp.Y)
 	// 	ebitenutil.DebugPrintAt(buff, p_str, 0, 20)
 	// }
-
-	mapH := scene.tm.GetHeight()
-	mapW := scene.tm.GetWidth()
-	tileH := scene.ts.GetTileHeight()
-	tileW := scene.ts.GetTileWidth()
-	camX, camY := scene.camera.GetPosition()
-	for y := range mapH {
-		for x := range mapW {
-			op := &ebiten.DrawImageOptions{}
-			op.GeoM.Translate(float64((x*tileW)-camX), float64((y*tileH)-camY))
-			buff.DrawImage(scene.tm.GetTile(x, y), op)
-		}
-	}
-
+	scene.drawMap(buff)
 	scene.camera.Draw(screen)
-
 	return nil
 }
 
 func (scene *TestScene) Destroy() {
+}
 
+func (scene *TestScene) drawMap(buff *ebiten.Image) {
+	tileH := scene.ts.GetTileHeight()
+	tileW := scene.ts.GetTileWidth()
+	// buffH := buff.Bounds().Dy()
+	// buffW := buff.Bounds().Dx()
+
+	// camX, camY := scene.camera.GetPosition()
+	// camHalfW := buffW / 2
+	// camHalfH := buffH / 2
+	// startX := math.Max(0, float64(camX-camHalfW))
+	// startY := math.Max(0, float64(camY-camHalfH))
+	// endX := startX + float64(camHalfW)
+	// endY := startY + float64(camHalfH)
+
+	mapRect := scene.camera.GetDisplayRect()
+	startTileX := mapRect.Min.X / tileW
+	startTileY := mapRect.Min.Y / tileH
+	endTileX := mapRect.Max.X / tileW
+	endTileY := mapRect.Max.Y / tileH
+	yPos := 0
+	for y := startTileY; y < endTileY; y++ {
+		xPos := 0
+		for x := startTileX; x < endTileX; x++ {
+			t, err := scene.tm.GetTile(x, y)
+			if err == nil {
+				op := &ebiten.DrawImageOptions{}
+				op.GeoM.Translate(float64(xPos*tileW), float64(yPos*tileH))
+				buff.DrawImage(t, op)
+			}
+			xPos += 1
+		}
+		yPos += 1
+	}
 }

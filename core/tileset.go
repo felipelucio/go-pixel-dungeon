@@ -46,6 +46,9 @@ func NewTileset(name string, imgPath string, tileW int, tileH int) (Tileset, err
 }
 
 func (ts *Tileset) Get(id int) *ebiten.Image {
+	if id < 0 || id > len(ts.tiles) {
+		id = 0
+	}
 	return ts.tiles[id]
 }
 

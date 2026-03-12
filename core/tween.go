@@ -54,6 +54,10 @@ func (tween *Tween) IsFinished() bool {
 	return tween.currTime == tween.time
 }
 
+func (tween *Tween) End() {
+	tween.currTime = tween.time
+}
+
 type TweenVector2 struct {
 	orig     Vector2[float64]
 	dest     Vector2[float64]
@@ -83,6 +87,10 @@ func (tween *TweenVector2) Update(delta float64) (Vector2[float64], bool) {
 
 func (tween *TweenVector2) IsFinished() bool {
 	return tween.currTime == tween.time
+}
+
+func (tween *TweenVector2) End() {
+	tween.currTime = tween.time
 }
 
 type TweenVector3 struct {
@@ -115,4 +123,8 @@ func (tween *TweenVector3) Update(delta float64) (Vector3[float64], bool) {
 
 func (tween *TweenVector3) IsFinished() bool {
 	return tween.currTime == tween.time
+}
+
+func (tween *TweenVector3) End() {
+	tween.currTime = tween.time
 }
