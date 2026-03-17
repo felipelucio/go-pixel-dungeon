@@ -1,0 +1,406 @@
+package game
+
+import (
+	"errors"
+
+	"github.com/felipelucio/go-pixel-dungeon/game/actors"
+	"github.com/felipelucio/go-pixel-dungeon/game/items"
+)
+
+type ILevelBuilder interface {
+	PlayLevelMusic()
+	StandardRooms(forceMax bool) int
+	SpecialRooms(forceMax bool) int
+	TilesTexture() string
+	WaterTexture() string
+	TrapClasses() []string
+	TrapChances() []float32
+	CreateMobs()
+	AddVisuals()
+	BuildFlagMaps()
+}
+
+type Level struct {
+	Width  int
+	Height int
+
+	Tiles        []int
+	Visited      []bool
+	Mapped       []bool
+	Discoverable []bool
+	Passable     []bool
+	LosBlocking  []bool
+	Flamable     []bool
+	Secret       []bool
+	Solid        []bool
+	Avoid        []bool
+	Water        []bool
+	Pit          []bool
+	OpenSpace    []bool
+
+	Entrance int
+	Exit     int
+
+	Mobs   []*actors.Mob
+	Blobs  []*actors.Blob
+	Traps  []*actors.Trap
+	Heaps  []*items.Heap
+	Plants []*items.Plant
+}
+
+func NewLevel(w, h int) *Level {
+	return &Level{
+		Width:  w,
+		Height: h,
+
+		Tiles:        make([]int, w*h),
+		Visited:      make([]bool, w*h),
+		Mapped:       make([]bool, w*h),
+		Discoverable: make([]bool, w*h),
+		Passable:     make([]bool, w*h),
+		LosBlocking:  make([]bool, w*h),
+		Flamable:     make([]bool, w*h),
+		Secret:       make([]bool, w*h),
+		Solid:        make([]bool, w*h),
+		Avoid:        make([]bool, w*h),
+		Water:        make([]bool, w*h),
+		Pit:          make([]bool, w*h),
+		OpenSpace:    make([]bool, w*h),
+
+		Mobs:   make([]*actors.Mob, 10),
+		Blobs:  make([]*actors.Blob, 10),
+		Traps:  make([]*actors.Trap, 10),
+		Heaps:  make([]*items.Heap, 10),
+		Plants: make([]*items.Plant, 10),
+	}
+}
+
+func (l *Level) GetWidth() int {
+	return l.Width
+}
+
+func (l *Level) SetWidth(w int) {
+	l.Width = w
+}
+
+func (l *Level) GetHeight() int {
+	return l.Height
+}
+
+func (l *Level) SetHeight(h int) {
+	l.Height = h
+}
+
+func (l *Level) checkInbound(x, y int) error {
+	if x < 0 || x > l.Width || y < 0 || y >= l.Height {
+		return errors.New("Out of bounds")
+	}
+	return nil
+}
+
+func (l *Level) GetIndex(x, y int) (int, error) {
+	err := l.checkInbound(x, y)
+	if err != nil {
+		return -1, err
+	}
+	return (y * l.Width) + x, nil
+}
+
+func (l *Level) GetTile(x, y int) (int, error) {
+	idx, err := l.GetIndex(x, y)
+	if err != nil {
+		return -1, err
+	}
+	return l.Tiles[idx], nil
+}
+
+func (l *Level) SetTile(x, y, id int) error {
+	idx, err := l.GetIndex(x, y)
+	if err != nil {
+		return err
+	}
+	l.Tiles[idx] = id
+	return nil
+}
+
+func (l *Level) GetEntrance() int {
+	return l.Entrance
+}
+
+func (l *Level) SetEntrance(id int) error {
+	l.Entrance = id
+	return nil
+}
+
+func (l *Level) GetExit() int {
+	return l.Entrance
+}
+
+func (l *Level) SetExit(id int) error {
+	l.Exit = id
+	return nil
+}
+
+func (l *Level) IsVisited(x, y int) (bool, error) {
+	idx, err := l.GetIndex(x, y)
+	if err != nil {
+		return false, err
+	}
+	return l.Visited[idx], nil
+}
+
+func (l *Level) SetVisited(x, y int, val bool) error {
+	idx, err := l.GetIndex(x, y)
+	if err != nil {
+		return err
+	}
+	l.Visited[idx] = val
+	return nil
+}
+
+func (l *Level) IsMapped(x, y int) (bool, error) {
+	idx, err := l.GetIndex(x, y)
+	if err != nil {
+		return false, err
+	}
+	return l.Mapped[idx], nil
+}
+
+func (l *Level) SetMapped(x, y int, val bool) error {
+	idx, err := l.GetIndex(x, y)
+	if err != nil {
+		return err
+	}
+	l.Mapped[idx] = val
+	return nil
+}
+
+func (l *Level) IsDiscoverable(x, y int) (bool, error) {
+	idx, err := l.GetIndex(x, y)
+	if err != nil {
+		return false, err
+	}
+	return l.Discoverable[idx], nil
+}
+
+func (l *Level) SetDiscoverable(x, y int, val bool) error {
+	idx, err := l.GetIndex(x, y)
+	if err != nil {
+		return err
+	}
+	l.Mapped[idx] = val
+	return nil
+}
+
+func (l *Level) IsPassable(x, y int) (bool, error) {
+	idx, err := l.GetIndex(x, y)
+	if err != nil {
+		return false, err
+	}
+	return l.Passable[idx], nil
+}
+
+func (l *Level) SetPassable(x, y int, val bool) error {
+	idx, err := l.GetIndex(x, y)
+	if err != nil {
+		return err
+	}
+	l.Passable[idx] = val
+	return nil
+}
+
+func (l *Level) IsLOSBlocking(x, y int) (bool, error) {
+	idx, err := l.GetIndex(x, y)
+	if err != nil {
+		return false, err
+	}
+	return l.LosBlocking[idx], nil
+}
+
+func (l *Level) SetLOSBlocking(x, y int, val bool) error {
+	idx, err := l.GetIndex(x, y)
+	if err != nil {
+		return err
+	}
+	l.LosBlocking[idx] = val
+	return nil
+}
+
+func (l *Level) IsFlamable(x, y int) (bool, error) {
+	idx, err := l.GetIndex(x, y)
+	if err != nil {
+		return false, err
+	}
+	return l.Flamable[idx], nil
+}
+
+func (l *Level) SetFlamable(x, y int, val bool) error {
+	idx, err := l.GetIndex(x, y)
+	if err != nil {
+		return err
+	}
+	l.Flamable[idx] = val
+	return nil
+}
+
+func (l *Level) IsSecret(x, y int) (bool, error) {
+	idx, err := l.GetIndex(x, y)
+	if err != nil {
+		return false, err
+	}
+	return l.Secret[idx], nil
+}
+
+func (l *Level) SetSecret(x, y int, val bool) error {
+	idx, err := l.GetIndex(x, y)
+	if err != nil {
+		return err
+	}
+	l.Secret[idx] = val
+	return nil
+}
+
+func (l *Level) IsSolid(x, y int) (bool, error) {
+	idx, err := l.GetIndex(x, y)
+	if err != nil {
+		return false, err
+	}
+	return l.Solid[idx], nil
+}
+
+func (l *Level) SetSolid(x, y int, val bool) error {
+	idx, err := l.GetIndex(x, y)
+	if err != nil {
+		return err
+	}
+	l.Solid[idx] = val
+	return nil
+}
+
+func (l *Level) IsAvoid(x, y int) (bool, error) {
+	idx, err := l.GetIndex(x, y)
+	if err != nil {
+		return false, err
+	}
+	return l.Avoid[idx], nil
+}
+
+func (l *Level) SetAvoid(x, y int, val bool) error {
+	idx, err := l.GetIndex(x, y)
+	if err != nil {
+		return err
+	}
+	l.Avoid[idx] = val
+	return nil
+}
+
+func (l *Level) IsWater(x, y int) (bool, error) {
+	idx, err := l.GetIndex(x, y)
+	if err != nil {
+		return false, err
+	}
+	return l.Water[idx], nil
+}
+
+func (l *Level) SetWater(x, y int, val bool) error {
+	idx, err := l.GetIndex(x, y)
+	if err != nil {
+		return err
+	}
+	l.Water[idx] = val
+	return nil
+}
+
+func (l *Level) IsPit(x, y int) (bool, error) {
+	idx, err := l.GetIndex(x, y)
+	if err != nil {
+		return false, err
+	}
+	return l.Pit[idx], nil
+}
+
+func (l *Level) SetPit(x, y int, val bool) error {
+	idx, err := l.GetIndex(x, y)
+	if err != nil {
+		return err
+	}
+	l.Pit[idx] = val
+	return nil
+}
+
+func (l *Level) IsOpenSpace(x, y int) (bool, error) {
+	idx, err := l.GetIndex(x, y)
+	if err != nil {
+		return false, err
+	}
+	return l.OpenSpace[idx], nil
+}
+
+func (l *Level) SetOpenSpace(x, y int, val bool) error {
+	idx, err := l.GetIndex(x, y)
+	if err != nil {
+		return err
+	}
+	l.OpenSpace[idx] = val
+	return nil
+}
+
+func (l *Level) GetMobs() []*actors.Mob {
+	return l.Mobs
+}
+
+func (l *Level) AddMob(mob *actors.Mob) error {
+	return errors.New("Not implemented")
+}
+
+func (l *Level) RemoveMob(mob *actors.Mob) error {
+	return errors.New("Not implemented")
+}
+
+func (l *Level) GetBlobs() []*actors.Blob {
+	return l.Blobs
+}
+
+func (l *Level) AddBlob(blob *actors.Blob) error {
+	return errors.New("Not implemented")
+}
+
+func (l *Level) RemoveBlob(blob *actors.Blob) error {
+	return errors.New("Not implemented")
+}
+
+func (l *Level) GetTraps() []*actors.Trap {
+	return l.Traps
+}
+
+func (l *Level) AddTrap(trap *actors.Trap) error {
+	return errors.New("Not implemented")
+}
+
+func (l *Level) RemoveTrap(trap *actors.Trap) error {
+	return errors.New("Not implemented")
+}
+
+func (l *Level) GetHeaps() []*items.Heap {
+	return l.Heaps
+}
+
+func (l *Level) AddHeap(heap *items.Heap) error {
+	return errors.New("Not implemented")
+}
+
+func (l *Level) RemoveHeap(heap *items.Heap) error {
+	return errors.New("Not implemented")
+}
+
+func (l *Level) GetPlants() []*items.Plant {
+	return l.Plants
+}
+
+func (l *Level) AddPlant(plant *items.Plant) error {
+	return errors.New("Not implemented")
+}
+
+func (l *Level) RemovePlant(plant *items.Plant) error {
+	return errors.New("Not implemented")
+}

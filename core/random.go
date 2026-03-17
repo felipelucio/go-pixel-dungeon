@@ -3,6 +3,7 @@ package core
 import (
 	"crypto/md5"
 	"encoding/hex"
+	"math"
 	"math/big"
 	"math/rand/v2"
 	"strconv"
@@ -86,4 +87,24 @@ func (r *Random) Perm(n int) []int {
 
 func (r *Random) Shuffle(n int, swap func(i, j int)) {
 	r.rng.Shuffle(n, swap)
+}
+
+func (r *Random) Chances(chances []float64) int {
+	sum := 0.0
+	for _, v := range chances {
+		sum += math.Max(0, v)
+	}
+	if sum <= 0 {
+		return -1
+	}
+	value := sum
+	sum = 0
+	for i, v := range chances {
+		sum += math.Max(0, v)
+		if value < sum {
+			return i
+		}
+	}
+
+	return -1
 }

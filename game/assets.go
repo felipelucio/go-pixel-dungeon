@@ -1,143 +1,149 @@
 package game
 
-const ARCS_BG string = "interfaces/arcs1.png"
-const ARCS_FG string = "interfaces/arcs2.png"
+var AssetEffects map[string]string = map[string]string{
+	"FIREBALL_TALL":  "effects/fireball_tall.png",
+	"FIREBALL_SHORT": "effects/fireball_short.png",
+	"SPECKS":         "effects/specks.png",
+	"EFFECTS":        "effects/effects.png",
+	"SPELL_ICONS":    "effects/spell_icons.png",
+}
 
-// const DASHBOARD string = "dashboard.png"
-const BANNERS string = "interfaces/banners.png"
-const BADGES string = "interfaces/badges.png"
-const LOCKED string = "interfaces/locked_badge.png"
-const CHROME string = "interfaces/chrome.png"
-const ICONS string = "interfaces/icons.png"
-const STATUS string = "interfaces/status_pane.png"
-const TOOLBAR string = "interfaces/toolbar.png"
-const SHADOW string = "interfaces/shadow.png"
-const SURFACE string = "interfaces/surface.png"
+var AssetFonts map[string]string = map[string]string{
+	"FONT_PIXEL": "fonts/pixel_font.png",
+	"FONT_TTF":   "fonts/pixel_font.ttf",
+}
 
-// const HP_BAR string = "hp_bar.png"
-// const XP_BAR string = "exp_bar.png"
+var AssetInterface map[string]string = map[string]string{
+	"ARCS_BG": "interfaces/arcs1.png",
+	"ARCS_FG": "interfaces/arcs2.png",
+	// "DASHBOARD": "dashboard.png",
+	"BANNERS":     "interfaces/banners.png",
+	"BADGES":      "interfaces/badges.png",
+	"LOCKED":      "interfaces/locked_badge.png",
+	"CHROME":      "interfaces/chrome.png",
+	"ICONS":       "interfaces/icons.png",
+	"STATUS":      "interfaces/status_pane.png",
+	"TOOLBAR":     "interfaces/toolbar.png",
+	"SHADOW":      "interfaces/shadow.png",
+	"SURFACE":     "interfaces/surface.png",
+	"BUFFS_SMALL": "interfaces/buffs.png",
+	"BUFFS_LARGE": "interfaces/large_buffs.png",
+}
 
-const AMULET string = "sprites/amulet.png"
-const WARRIOR string = "sprites/warrior.png"
-const MAGE string = "sprites/mage.png"
-const ROGUE string = "sprites/rogue.png"
-const HUNTRESS string = "sprites/ranger.png"
-const AVATARS string = "sprites/avatars.png"
-const PET string = "sprites/pet.png"
+var AssetMusic map[string]string = map[string]string{
+	"THEME_1":      "music/theme_1.ogg",
+	"THEME_2":      "music/theme_2.ogg",
+	"THEME_FINALE": "music/theme_finale.ogg",
+}
 
-const FIREBALL_TALL string = "effects/fireball_tall.png"
-const FIREBALL_SHORT string = "effects/fireball_short.png"
-const SPECKS string = "effects/specks.png"
-const EFFECTS string = "effects/effects.png"
+var AssetSounds map[string]string = map[string]string{
+	"SND_GOLD":      "sounds/gold.mp3",
+	"SND_OPEN":      "sounds/door_open.mp3",
+	"SND_UNLOCK":    "sounds/unlock.mp3",
+	"SND_ITEM":      "sounds/item.mp3",
+	"SND_DEWDROP":   "sounds/dewdrop.mp3",
+	"SND_HIT":       "sounds/hit.mp3",
+	"SND_MISS":      "sounds/miss.mp3",
+	"SND_STEP":      "sounds/step.mp3",
+	"SND_WATER":     "sounds/water.mp3",
+	"SND_DESCEND":   "sounds/descend.mp3",
+	"SND_EAT":       "sounds/eat.mp3",
+	"SND_READ":      "sounds/read.mp3",
+	"SND_LULLABY":   "sounds/lullaby.mp3",
+	"SND_DRINK":     "sounds/drink.mp3",
+	"SND_SHATTER":   "sounds/shatter.mp3",
+	"SND_ZAP":       "sounds/zap.mp3",
+	"SND_LIGHTNING": "sounds/lightning.mp3",
+	"SND_LEVELUP":   "sounds/levelup.mp3",
+	"SND_DEATH":     "sounds/death.mp3",
+	"SND_CHALLENGE": "sounds/challenge.mp3",
+	"SND_CURSED":    "sounds/cursed.mp3",
+	"SND_TRAP":      "sounds/trap.mp3",
+	"SND_EVOKE":     "sounds/evoke.mp3",
+	"SND_TOMB":      "sounds/tomb.mp3",
+	"SND_ALERT":     "sounds/alert.mp3",
+	"SND_MELD":      "sounds/meld.mp3",
+	"SND_BOSS":      "sounds/boss.mp3",
+	"SND_BLAST":     "sounds/blast.mp3",
+	"SND_PLANT":     "sounds/plant.mp3",
+	"SND_RAY":       "sounds/ray.mp3",
+	"SND_BEACON":    "sounds/beacon.mp3",
+	"SND_TELEPORT":  "sounds/teleport.mp3",
+	"SND_CHARMS":    "sounds/charms.mp3",
+	"SND_MASTERY":   "sounds/mastery.mp3",
+	"SND_PUFF":      "sounds/puff.mp3",
+	"SND_ROCKS":     "sounds/rocks.mp3",
+	"SND_BURNING":   "sounds/burning.mp3",
+	"SND_FALLING":   "sounds/falling.mp3",
+	"SND_GHOST":     "sounds/ghost.mp3",
+	"SND_SECRET":    "sounds/secret.mp3",
+	"SND_BONES":     "sounds/bones.mp3",
+	"SND_BEE":       "sounds/bee.mp3",
+	"SND_DEGRADE":   "sounds/degrade.mp3",
+	"SND_MIMIC":     "sounds/mimic.mp3",
+}
 
-const RAT string = "sprites/rat.png"
-const GNOLL string = "sprites/gnoll.png"
-const CRAB string = "sprites/crab.png"
-const GOO string = "sprites/goo.png"
-const SWARM string = "sprites/swarm.png"
-const SKELETON string = "sprites/skeleton.png"
-const SHAMAN string = "sprites/shaman.png"
-const THIEF string = "sprites/thief.png"
-const TENGU string = "sprites/tengu.png"
-const SHEEP string = "sprites/sheep.png"
-const KEEPER string = "sprites/shopkeeper.png"
-const BAT string = "sprites/bat.png"
-const BRUTE string = "sprites/brute.png"
-const SPINNER string = "sprites/spinner.png"
-const DM300 string = "sprites/dm300.png"
-const WRAITH string = "sprites/wraith.png"
-const ELEMENTAL string = "sprites/elemental.png"
-const MONK string = "sprites/monk.png"
-const WARLOCK string = "sprites/warlock.png"
-const GOLEM string = "sprites/golem.png"
-const UNDEAD string = "sprites/undead.png"
-const KING string = "sprites/king.png"
-const STATUE string = "sprites/statue.png"
-const PIRANHA string = "sprites/piranha.png"
-const EYE string = "sprites/eye.png"
-const SUCCUBUS string = "sprites/succubus.png"
-const SCORPIO string = "sprites/scorpio.png"
-const ROTTING string = "sprites/rotting_fist.png"
-const BURNING string = "sprites/burning_fist.png"
-const YOG string = "sprites/yog.png"
-const LARVA string = "sprites/larva.png"
-const GHOST string = "sprites/ghost.png"
-const MAKER string = "sprites/wandmaker.png"
-const TROLL string = "sprites/blacksmith.png"
-const IMP string = "sprites/demon.png"
-const RATKING string = "sprites/ratking.png"
-const BEE string = "sprites/bee.png"
-const MIMIC string = "sprites/mimic.png"
+var AssetSprites map[string]string = map[string]string{
+	"AMULET":   "sprites/amulet.png",
+	"WARRIOR":  "sprites/warrior.png",
+	"MAGE":     "sprites/mage.png",
+	"ROGUE":    "sprites/rogue.png",
+	"HUNTRESS": "sprites/ranger.png",
+	"AVATARS":  "sprites/avatars.png",
+	"PET":      "sprites/pet.png",
 
-const ITEMS string = "sprites/items.png"
+	"RAT":       "sprites/rat.png",
+	"GNOLL":     "sprites/gnoll.png",
+	"CRAB":      "sprites/crab.png",
+	"GOO":       "sprites/goo.png",
+	"SWARM":     "sprites/swarm.png",
+	"SKELETON":  "sprites/skeleton.png",
+	"SHAMAN":    "sprites/shaman.png",
+	"THIEF":     "sprites/thief.png",
+	"TENGU":     "sprites/tengu.png",
+	"SHEEP":     "sprites/sheep.png",
+	"KEEPER":    "sprites/shopkeeper.png",
+	"BAT":       "sprites/bat.png",
+	"BRUTE":     "sprites/brute.png",
+	"SPINNER":   "sprites/spinner.png",
+	"DM300":     "sprites/dm300.png",
+	"WRAITH":    "sprites/wraith.png",
+	"ELEMENTAL": "sprites/elemental.png",
+	"MONK":      "sprites/monk.png",
+	"WARLOCK":   "sprites/warlock.png",
+	"GOLEM":     "sprites/golem.png",
+	"UNDEAD":    "sprites/undead.png",
+	"KING":      "sprites/king.png",
+	"STATUE":    "sprites/statue.png",
+	"PIRANHA":   "sprites/piranha.png",
+	"EYE":       "sprites/eye.png",
+	"SUCCUBUS":  "sprites/succubus.png",
+	"SCORPIO":   "sprites/scorpio.png",
+	"ROTTING":   "sprites/rotting_fist.png",
+	"BURNING":   "sprites/burning_fist.png",
+	"YOG":       "sprites/yog.png",
+	"LARVA":     "sprites/larva.png",
+	"GHOST":     "sprites/ghost.png",
+	"MAKER":     "sprites/wandmaker.png",
+	"TROLL":     "sprites/blacksmith.png",
+	"IMP":       "sprites/demon.png",
+	"RATKING":   "sprites/ratking.png",
+	"BEE":       "sprites/bee.png",
+	"MIMIC":     "sprites/mimic.png",
 
-// const PLANTS string = "plants.png"
+	"ITEMS": "sprites/items.png",
+}
 
-const TILES_SEWERS string = "environment/tiles_sewers.png"
-const TILES_PRISON string = "environment/tiles_prison.png"
-const TILES_CAVES string = "environment/tiles_caves.png"
-const TILES_CITY string = "environment/tiles_city.png"
-const TILES_HALLS string = "environment/tiles_halls.png"
+var AssetTiles map[string]string = map[string]string{
+	"TILES_SEWERS": "environment/tiles_sewers.png",
+	"TILES_PRISON": "environment/tiles_prison.png",
+	"TILES_CAVES":  "environment/tiles_caves.png",
+	"TILES_CITY":   "environment/tiles_city.png",
+	"TILES_HALLS":  "environment/tiles_halls.png",
 
-const WATER_SEWERS string = "environment/water0.png"
-const WATER_PRISON string = "environment/water1.png"
-const WATER_CAVES string = "environment/water2.png"
-const WATER_CITY string = "environment/water3.png"
-const WATER_HALLS string = "environment/water4.png"
-
-const BUFFS_SMALL string = "interfaces/buffs.png"
-const BUFFS_LARGE string = "interfaces/large_buffs.png"
-const SPELL_ICONS string = "effects/spell_icons.png"
-
-const FONT_PIXEL string = "fonts/pixel_font.png"
-const FONT_TTF string = "fonts/pixel_font.ttf"
-
-const THEME_1 string = "music/theme_1.ogg"
-const THEME_2 string = "music/theme_2.ogg"
-const THEME_FINALE string = "music/theme_finale.ogg"
-
-const SND_GOLD string = "sounds/gold.ogg"
-
-const SND_OPEN string = "sounds/door_open.ogg"
-const SND_UNLOCK string = "sounds/unlock.ogg"
-const SND_ITEM string = "sounds/item.ogg"
-const SND_DEWDROP string = "sounds/dewdrop.ogg"
-const SND_HIT string = "sounds/hit.ogg"
-const SND_MISS string = "sounds/miss.ogg"
-const SND_STEP string = "sounds/step.ogg"
-const SND_WATER string = "sounds/water.ogg"
-const SND_DESCEND string = "sounds/descend.ogg"
-const SND_EAT string = "sounds/eat.ogg"
-const SND_READ string = "sounds/read.ogg"
-const SND_LULLABY string = "sounds/lullaby.ogg"
-const SND_DRINK string = "sounds/drink.ogg"
-const SND_SHATTER string = "sounds/shatter.ogg"
-const SND_ZAP string = "sounds/zap.ogg"
-const SND_LIGHTNING string = "sounds/lightning.ogg"
-const SND_LEVELUP string = "sounds/levelup.ogg"
-const SND_DEATH string = "sounds/death.ogg"
-const SND_CHALLENGE string = "sounds/challenge.ogg"
-const SND_CURSED string = "sounds/cursed.ogg"
-const SND_TRAP string = "sounds/trap.ogg"
-const SND_EVOKE string = "sounds/evoke.ogg"
-const SND_TOMB string = "sounds/tomb.ogg"
-const SND_ALERT string = "sounds/alert.ogg"
-const SND_MELD string = "sounds/meld.ogg"
-const SND_BOSS string = "sounds/boss.ogg"
-const SND_BLAST string = "sounds/blast.ogg"
-const SND_PLANT string = "sounds/plant.ogg"
-const SND_RAY string = "sounds/ray.ogg"
-const SND_BEACON string = "sounds/beacon.ogg"
-const SND_TELEPORT string = "sounds/teleport.ogg"
-const SND_CHARMS string = "sounds/charms.ogg"
-const SND_MASTERY string = "sounds/mastery.ogg"
-const SND_PUFF string = "sounds/puff.ogg"
-const SND_ROCKS string = "sounds/rocks.ogg"
-const SND_BURNING string = "sounds/burning.ogg"
-const SND_FALLING string = "sounds/falling.ogg"
-const SND_GHOST string = "sounds/ghost.ogg"
-const SND_SECRET string = "sounds/secret.ogg"
-const SND_BONES string = "sounds/bones.ogg"
-const SND_BEE string = "sounds/bee.ogg"
-const SND_DEGRADE string = "sounds/degrade.ogg"
-const SND_MIMIC string = "sounds/mimic.ogg"
+	"WATER_SEWERS": "environment/water0.png",
+	"WATER_PRISON": "environment/water1.png",
+	"WATER_CAVES":  "environment/water2.png",
+	"WATER_CITY":   "environment/water3.png",
+	"WATER_HALLS":  "environment/water4.png",
+}

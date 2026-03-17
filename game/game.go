@@ -7,17 +7,14 @@ import (
 
 type Game struct {
 	Title     string
-	GameState core.GameState
+	GameState *core.GameState
 }
 
 func NewGame() *Game {
 	return &Game{
-		Title: "Game",
+		Title:     "Game",
+		GameState: core.NewGameState("Hero"),
 	}
-}
-
-func (g *Game) SetState(gs core.GameState) {
-	g.GameState = gs
 }
 
 func (g *Game) Update() error {

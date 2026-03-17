@@ -11,6 +11,8 @@ import (
 func main() {
 	g := game.NewGame()
 	s := game.NewSession(g)
+	s.Audio().LoadMusic(game.AssetMusic)
+	s.Audio().LoadSFX(game.AssetSounds)
 
 	s.SceneManager().SwitchToScene(&scenes.TestScene{})
 

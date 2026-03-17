@@ -15,16 +15,13 @@ import (
 )
 
 type TestScene struct {
-	gs     *core.GameState
 	world  game.World
 	player *core.Entity
 	ts     core.Tileset
-	tm     core.Tilemap
 	camera core.Camera
 }
 
 func (scene *TestScene) Init() error {
-	scene.gs = &game.GetSession().Game().GameState
 	scene.world = game.NewWorld()
 	ok := scene.world.AddSystem(systems.MoveSystem, 10)
 	if ok != nil {
@@ -34,14 +31,12 @@ func (scene *TestScene) Init() error {
 
 	scene.player = scene.world.NewEntity()
 	scene.world.AddComponent(scene.player, &components.Position{})
-	tilePath := fmt.Sprintf("%s/%s", game.Config.AssetsPath, game.TILES_SEWERS)
+	tilePath := fmt.Sprintf("%s/%s", game.Config.AssetsPath, game.AssetTiles["TILES_SEWERS"])
 	ts, err := core.NewTileset("ts0", tilePath, 16, 16)
 	if err != nil {
 		log.Fatal(err)
 	}
 	scene.ts = ts
-	scene.tm = core.NewTilemap(&scene.ts, 512, 512)
-
 	scene.camera = core.NewCamera(768, 432, 0.5, 2.0, true)
 
 	return nil
@@ -124,12 +119,7 @@ func (scene *TestScene) drawMap(buff *ebiten.Image) {
 	for y := startTileY; y < endTileY; y++ {
 		xPos := 0
 		for x := startTileX; x < endTileX; x++ {
-			t, err := scene.tm.GetTile(x, y)
-			if err == nil {
-				op := &ebiten.DrawImageOptions{}
-				op.GeoM.Translate(float64(xPos*tileW), float64(yPos*tileH))
-				buff.DrawImage(t, op)
-			}
+
 			xPos += 1
 		}
 		yPos += 1

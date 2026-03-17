@@ -13,6 +13,7 @@ type Session struct {
 	random       *core.Random
 	sceneManager *core.SceneManager
 	game         *Game
+	audioManager *core.AudioManager
 }
 
 type SessionState struct {
@@ -33,6 +34,7 @@ func NewSession(game *Game) *Session {
 		random:       core.NewRandom(),
 		game:         game,
 		sceneManager: core.NewSceneManager(),
+		audioManager: core.NewAudioManager(),
 	}
 	session = &s
 	return &s
@@ -54,7 +56,7 @@ func LoadSession(game *Game, sessionFile string) (*Session, error) {
 
 	sess := NewSession(game)
 	sess.RNG().LoadState(sesState.Seed, sesState.SeedState)
-	sess.Game().SetState(sesState.GameState)
+	sess.game.GameState = &sesState.GameState
 
 	return sess, nil
 }
@@ -67,13 +69,13 @@ func (s *Session) SaveSession(sessionFile string) error {
 	defer f.Close()
 
 	sesState := SessionState{}
-	sesState.GameState = s.game.GameState
 	seed, st, err := s.RNG().SaveState()
 	if err != nil {
 		return err
 	}
 	sesState.Seed = seed
 	sesState.SeedState = st
+	sesState.GameState = *s.Game().GameState
 	enc := gob.NewEncoder(f)
 	err_e := enc.Encode(&sesState)
 	return err_e
@@ -89,4 +91,8 @@ func (s *Session) Game() *Game {
 
 func (s *Session) SceneManager() *core.SceneManager {
 	return s.sceneManager
+}
+
+func (s *Session) Audio() *core.AudioManager {
+	return s.audioManager
 }
