@@ -49,5 +49,8 @@ func BuildLevel(sess *game.Session) *game.Level {
 	default:
 		level = levels.DeadEndLevel(sess)
 	}
+
+	level
+
 	return level
 }

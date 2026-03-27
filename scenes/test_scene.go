@@ -15,6 +15,7 @@ type TestScene struct {
 
 func (scene *TestScene) Init() error {
 	sess := game.GetSession()
+	level := game.NewLevel()
 	// scene.camera = core.NewCamera(768, 432, 0.5, 2.0, true)
 
 	return nil
