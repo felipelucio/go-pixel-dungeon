@@ -4,8 +4,8 @@ import (
 	"github.com/felipelucio/go-pixel-dungeon/game"
 )
 
-var standardRoomConfig = game.RoomConfig{
-	Name: "StandardRoom",
+var entranceRoomConfig = game.RoomConfig{
+	Name: "EntranceRoom",
 	Categories: map[game.RoomSizeCategory][3]int{
 		game.RoomCategoryNormal: {4, 10, 1},
 		game.RoomCategoryLarge:  {10, 14, 2},
@@ -18,9 +18,9 @@ var standardRoomConfig = game.RoomConfig{
 	},
 }
 
-func NewStandardRoom(sizeCat game.RoomSizeCategory) *game.Room {
+func NewEntranceRoom(sizeCat game.RoomSizeCategory) *game.Room {
 	r := game.NewRoom()
-	rconf := standardRoomConfig
+	rconf := entranceRoomConfig
 	r.Name = rconf.Name
 
 	return r

@@ -2,6 +2,8 @@ package core
 
 import "github.com/hajimehoshi/ebiten/v2"
 
+var _defaultSceneManager *SceneManager
+
 type Scene interface {
 	Init() error
 	Pause()
@@ -19,6 +21,17 @@ func NewSceneManager() *SceneManager {
 	return &SceneManager{
 		sceneStack: make([]Scene, 5),
 	}
+}
+
+func DefaultSceneManager() *SceneManager {
+	if _defaultSceneManager == nil {
+		_defaultSceneManager = NewSceneManager()
+	}
+	return _defaultSceneManager
+}
+
+func SetDefaultSceneManager(sm *SceneManager) {
+	_defaultSceneManager = sm
 }
 
 // Scene returns the current scene.

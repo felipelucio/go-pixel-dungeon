@@ -2,11 +2,11 @@ package core
 
 import (
 	"crypto/md5"
+	crand "crypto/rand"
 	"encoding/hex"
 	"math"
 	"math/big"
 	"math/rand/v2"
-	"strconv"
 )
 
 type Random struct {
@@ -15,10 +15,13 @@ type Random struct {
 	seed    string
 }
 
-func NewRandom() *Random {
-	seed := strconv.Itoa(rand.Int())
+func NewRandom(seed *string) *Random {
+	if seed == nil {
+		rn_seed := crand.Text()
+		seed = &rn_seed
+	}
 	rng := Random{}
-	rng.Seed(seed)
+	rng.Seed(*seed)
 
 	return &rng
 }
@@ -33,6 +36,10 @@ func (r *Random) Seed(seed string) {
 	r.rng_pcg = rand.NewPCG(uint64(bi.Int64()), 1024)
 	r.rng = rand.New(r.rng_pcg)
 	r.seed = seed
+}
+
+func (r *Random) GetSeed() string {
+	return r.seed
 }
 
 func (r *Random) LoadState(seed string, state []byte) {

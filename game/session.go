@@ -7,56 +7,59 @@ import (
 	"github.com/felipelucio/go-pixel-dungeon/core"
 )
 
-var session *Session
+var _currSession *Session
 
 type Session struct {
-	random       *core.Random
-	sceneManager *core.SceneManager
-	game         *Game
-	audioManager *core.AudioManager
+	Random    *core.Random
+	GameState GameState
+	Seed      string
 }
 
-type SessionState struct {
-	GameState core.GameState
+// For serialization only
+type sessionState struct {
+	GameState GameState
 	Seed      string
 	SeedState []byte
 }
 
 func GetSession() *Session {
-	if session == nil {
+	if _currSession == nil {
 		panic("Session is not initialized!")
 	}
-	return session
+	return _currSession
 }
 
-func NewSession(game *Game) *Session {
-	s := Session{
-		random:       core.NewRandom(),
-		game:         game,
-		sceneManager: core.NewSceneManager(),
-		audioManager: core.NewAudioManager(),
+func SetSession(sess *Session) {
+	_currSession = sess
+}
+
+func NewSession(seed *string) *Session {
+	rng := core.NewRandom(seed)
+	// rng.Load
+	s := &Session{
+		Random:    rng,
+		GameState: *NewGameState(),
+		Seed:      rng.GetSeed(),
 	}
-	session = &s
-	return &s
+	return s
 }
 
-func LoadSession(game *Game, sessionFile string) (*Session, error) {
+func LoadSession(sessionFile string) (*Session, error) {
 	f, err := os.Open(sessionFile)
 	if err != nil {
 		return nil, err
 	}
 	defer f.Close()
 
-	var sesState SessionState
+	var sesState sessionState
 	dec := gob.NewDecoder(f)
 	err_d := dec.Decode(&sesState)
 	if err_d != nil {
 		return nil, err
 	}
 
-	sess := NewSession(game)
+	sess := NewSession(nil)
 	sess.RNG().LoadState(sesState.Seed, sesState.SeedState)
-	sess.game.GameState = &sesState.GameState
 
 	return sess, nil
 }
@@ -68,31 +71,19 @@ func (s *Session) SaveSession(sessionFile string) error {
 	}
 	defer f.Close()
 
-	sesState := SessionState{}
+	sesState := sessionState{}
 	seed, st, err := s.RNG().SaveState()
 	if err != nil {
 		return err
 	}
 	sesState.Seed = seed
 	sesState.SeedState = st
-	sesState.GameState = *s.Game().GameState
+	sesState.GameState = s.GameState
 	enc := gob.NewEncoder(f)
 	err_e := enc.Encode(&sesState)
 	return err_e
 }
 
 func (s *Session) RNG() *core.Random {
-	return s.random
-}
-
-func (s *Session) Game() *Game {
-	return s.game
-}
-
-func (s *Session) SceneManager() *core.SceneManager {
-	return s.sceneManager
-}
-
-func (s *Session) Audio() *core.AudioManager {
-	return s.audioManager
+	return s.Random
 }

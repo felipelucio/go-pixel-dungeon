@@ -7,22 +7,38 @@ import (
 	"github.com/felipelucio/go-pixel-dungeon/game/items"
 )
 
-type ILevelBuilder interface {
-	PlayLevelMusic()
-	StandardRooms(forceMax bool) int
-	SpecialRooms(forceMax bool) int
-	TilesTexture() string
-	WaterTexture() string
-	TrapClasses() []string
-	TrapChances() []float32
-	CreateMobs()
-	AddVisuals()
-	BuildFlagMaps()
+type LevelFeeling int
+
+const (
+	CHASM_FEEL LevelFeeling = iota
+	WATER_FEEL
+	GRASS_FEEL
+	DARK_FEEL
+	LARGE_FEEL
+	TRAPS_FEEL
+	SECRETS_FEEL
+	NONE_FEEL
+)
+
+type LevelConfig struct {
+	Music           []string
+	TilesTexture    string
+	WaterTexture    string
+	MinRooms        int
+	MaxRooms        int
+	MinSpecialRooms int
+	MaxSpecialRooms int
+	Traps           []func() *actors.Trap
+	TrapsChances    []float64
+	Mobs            []func() *actors.Mob
 }
 
 type Level struct {
 	Width  int
 	Height int
+
+	Feeling      LevelFeeling
+	ViewDistance int
 
 	Tiles        []int
 	Visited      []bool
@@ -46,26 +62,31 @@ type Level struct {
 	Traps  []*actors.Trap
 	Heaps  []*items.Heap
 	Plants []*items.Plant
+
+	Music []string
 }
 
-func NewLevel(w, h int) *Level {
+func NewLevel() *Level {
 	return &Level{
-		Width:  w,
-		Height: h,
+		Width:  0,
+		Height: 0,
 
-		Tiles:        make([]int, w*h),
-		Visited:      make([]bool, w*h),
-		Mapped:       make([]bool, w*h),
-		Discoverable: make([]bool, w*h),
-		Passable:     make([]bool, w*h),
-		LosBlocking:  make([]bool, w*h),
-		Flamable:     make([]bool, w*h),
-		Secret:       make([]bool, w*h),
-		Solid:        make([]bool, w*h),
-		Avoid:        make([]bool, w*h),
-		Water:        make([]bool, w*h),
-		Pit:          make([]bool, w*h),
-		OpenSpace:    make([]bool, w*h),
+		Feeling:      NONE_FEEL,
+		ViewDistance: 8,
+
+		Tiles:        make([]int, 0),
+		Visited:      make([]bool, 0),
+		Mapped:       make([]bool, 0),
+		Discoverable: make([]bool, 0),
+		Passable:     make([]bool, 0),
+		LosBlocking:  make([]bool, 0),
+		Flamable:     make([]bool, 0),
+		Secret:       make([]bool, 0),
+		Solid:        make([]bool, 0),
+		Avoid:        make([]bool, 0),
+		Water:        make([]bool, 0),
+		Pit:          make([]bool, 0),
+		OpenSpace:    make([]bool, 0),
 
 		Mobs:   make([]*actors.Mob, 10),
 		Blobs:  make([]*actors.Blob, 10),
@@ -75,12 +96,63 @@ func NewLevel(w, h int) *Level {
 	}
 }
 
-func (l *Level) GetWidth() int {
-	return l.Width
+func (l *Level) SetSize(w, h int) {
+	oldWidth := l.Width
+	oldHeight := l.Height
+	oldTiles := l.Tiles
+	oldVisited := l.Visited
+	oldMapped := l.Mapped
+	oldDiscoverable := l.Discoverable
+	oldPassable := l.Passable
+	oldLosBlocking := l.LosBlocking
+	oldFlamable := l.Flamable
+	oldSecret := l.Secret
+	oldSolid := l.Solid
+	oldAvoid := l.Avoid
+	oldWater := l.Water
+	oldPit := l.Pit
+	oldOpenSpace := l.OpenSpace
+
+	l.Width = w
+	l.Height = h
+	l.Tiles = make([]int, w*h)
+	l.Visited = make([]bool, w*h)
+	l.Mapped = make([]bool, w*h)
+	l.Discoverable = make([]bool, w*h)
+	l.Passable = make([]bool, w*h)
+	l.LosBlocking = make([]bool, w*h)
+	l.Flamable = make([]bool, w*h)
+	l.Secret = make([]bool, w*h)
+	l.Solid = make([]bool, w*h)
+	l.Avoid = make([]bool, w*h)
+	l.Water = make([]bool, w*h)
+	l.Pit = make([]bool, w*h)
+	l.OpenSpace = make([]bool, w*h)
+
+	for y := range oldHeight - 1 {
+		for x := range oldWidth - 1 {
+			idx := (y * oldWidth) + x
+			if idx < l.Width*l.Height {
+				l.Tiles[idx] = oldTiles[idx]
+				l.Visited[idx] = oldVisited[idx]
+				l.Mapped[idx] = oldMapped[idx]
+				l.Discoverable[idx] = oldDiscoverable[idx]
+				l.Passable[idx] = oldPassable[idx]
+				l.LosBlocking[idx] = oldLosBlocking[idx]
+				l.Flamable[idx] = oldFlamable[idx]
+				l.Secret[idx] = oldSecret[idx]
+				l.Solid[idx] = oldSolid[idx]
+				l.Avoid[idx] = oldAvoid[idx]
+				l.Water[idx] = oldWater[idx]
+				l.Pit[idx] = oldPit[idx]
+				l.OpenSpace[idx] = oldOpenSpace[idx]
+			}
+		}
+	}
 }
 
-func (l *Level) SetWidth(w int) {
-	l.Width = w
+func (l *Level) GetWidth() int {
+	return l.Width
 }
 
 func (l *Level) GetHeight() int {

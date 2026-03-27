@@ -6,82 +6,64 @@ import (
 	"github.com/felipelucio/go-pixel-dungeon/game/actors/traps"
 )
 
-type SewerLevel struct {
-	game.Level
+var sewerLevelConfig = game.LevelConfig{
+	Music: []string{
+		game.AssetMusic["SEWERS_1"],
+	},
+	TilesTexture:    game.AssetTiles["TILES_SEWERS"],
+	WaterTexture:    game.AssetTiles["WATER_SEWERS"],
+	MinRooms:        4,
+	MaxRooms:        6,
+	MinSpecialRooms: 1,
+	MaxSpecialRooms: 2,
+	Traps: []func() *actors.Trap{
+		traps.NewChillingTrap, traps.NewShockingTrap, traps.NewToxicTrap,
+		traps.NewWornDartTrap, traps.NewAlarmTrap, traps.NewOozeTrap,
+		traps.NewConfusionTrap, traps.NewFlockTrap, traps.NewSummoningTrap,
+		traps.NewTeleportTrap, traps.NewGatewayTrap,
+	},
+	TrapsChances: []float64{
+		4, 4, 4,
+		2, 2, 1,
+		1, 1, 1,
+		1,
+	},
+	Mobs: []func() *actors.Mob{},
 }
 
-func NewSewerLevel(w, h int) *SewerLevel {
-	return &SewerLevel{
-		Level: *game.NewLevel(w, h),
+func NewSewerLevel(sess *game.Session) *game.Level {
+	level := game.NewLevel()
+
+	level.AddItemToSpawn(food.Random())
+	if sess.GameState.PosNeeded() {
+		sess.GameState.LimitedDrops.StrengthPotion.Add(1)
+		level.AddItemToSpawn(potions.NewPotionOfStrength())
 	}
-}
 
-func (l *SewerLevel) PlayLevelMusic() {
-	game.GetSession().Audio().PlayMusic(game.AssetMusic["SEWERS_1"])
-}
-
-func (l *SewerLevel) StandardRooms(forceMax bool) int {
-	rng := game.GetSession().RNG()
-	if forceMax {
-		return 6
+	if sess.GameState.SouNeeded() {
+		sess.GameState.LimitedDrops.UpgradeScrolls.Add(1)
+		level.AddItemToSpawn(scrolls.NewScrollOfUpdate())
 	}
-	return 4 + rng.Chances([]float64{1, 3, 1})
-}
 
-func (l *SewerLevel) SpecialRooms(forceMax bool) int {
-	rng := game.GetSession().RNG()
-	if forceMax {
-		return 2
+	if sess.GameState.AsNeeded() {
+		sess.GameState.LimitedDrops.ArcaneStylus.Add(1)
+		level.AddItemToSpawn(items.NewStylus())
 	}
-	return 1 + rng.Chances([]float64{1, 4})
-}
 
-func (l *SewerLevel) TilesTexture() string {
-	return game.AssetTiles["TILES_SEWERS"]
-}
-
-func (l *SewerLevel) WaterTexture() string {
-	return game.AssetTiles["WATER_SEWERS"]
-}
-
-func (l *SewerLevel) TrapClasses() []func() *actors.Trap {
-	gs := game.GetSession().Game().GameState
-	if gs.Depth == 1 {
-		return []func() *actors.Trap{
-			traps.NewWornDartTrap,
-		}
-	} else {
-		return []func() *actors.Trap{
-			traps.NewChillingTrap, traps.NewShockingTrap, traps.NewToxicTrap,
-			traps.NewWornDartTrap, traps.NewAlarmTrap, traps.NewOozeTrap,
-			traps.NewConfusionTrap, traps.NewFlockTrap, traps.NewSummoningTrap,
-			traps.NewTeleportTrap, traps.NewGatewayTrap,
-		}
+	if sess.GameState.EnchStoneNeeded() {
+		sess.GameState.LimitedDrops.EnchantmentStone.Drop()
+		level.AddItemToSpawn(items.NewEnchantmentStone())
 	}
-}
 
-func (l *SewerLevel) TrapChances() []float64 {
-	gs := game.GetSession().Game().GameState
-	if gs.Depth == 1 {
-		return []float64{1}
-	} else {
-		return []float64{
-			4, 4, 4,
-			2, 2, 1,
-			1, 1, 1,
-			1,
-		}
+	if sess.GameState.IntStoneNeeded() {
+		sess.GameState.LimitedDrops.IntelligenceStone.Drop()
+		level.AddItemToSpawn(items.NewIntelligenceStone())
 	}
-}
 
-func (l *SewerLevel) CreateMobs() {
+	if sess.GameState.TrinketCatalystNeeded() {
+		sess.GameState.LimitedDrops.TrinketCatalyst.Drop()
+		level.AddItemToSpawn(items.NewTrinketCatalyst())
+	}
 
-}
-
-func (l *SewerLevel) AddVisuals() {
-
-}
-
-func (l *SewerLevel) BuildFlagMaps() {
-
+	return level
 }

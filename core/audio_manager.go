@@ -1,124 +1,86 @@
 package core
 
 import (
-	"bytes"
 	"fmt"
-	"os"
-	"path/filepath"
+	"io"
 
 	"github.com/hajimehoshi/ebiten/v2/audio"
-	"github.com/hajimehoshi/ebiten/v2/audio/mp3"
-	"github.com/hajimehoshi/ebiten/v2/audio/vorbis"
 )
 
 const (
 	SAMPLE_RATE = 48000
 )
 
-type AudioManager struct {
-	context *audio.Context
+var _defaultAudioManager *AudioManager
 
-	soundsOgg map[string]*vorbis.Stream
-	musicOgg  map[string]*vorbis.Stream
-	soundsMp3 map[string]*mp3.Stream
-	musicMp3  map[string]*mp3.Stream
-	players   map[string]chan *audio.Player
+type AudioManager struct {
+	context      *audio.Context
+	sfxStreams   map[string]io.ReadSeeker
+	sfxPlayers   []*audio.Player
+	musicStreams map[string]*audio.InfiniteLoop
+	musicPlayer  *audio.Player
 }
 
 func NewAudioManager() *AudioManager {
 	ctx := audio.NewContext(SAMPLE_RATE)
 	return &AudioManager{
-		context:   ctx,
-		soundsOgg: make(map[string]*vorbis.Stream),
-		musicOgg:  make(map[string]*vorbis.Stream),
-		soundsMp3: make(map[string]*mp3.Stream),
-		musicMp3:  make(map[string]*mp3.Stream),
-		players:   make(map[string]chan *audio.Player),
+		context:      ctx,
+		sfxStreams:   make(map[string]io.ReadSeeker),
+		sfxPlayers:   make([]*audio.Player, 10),
+		musicStreams: make(map[string]*audio.InfiniteLoop),
 	}
 }
 
-func (am *AudioManager) LoadMusic(mList map[string]string) error {
-	for name, path := range mList {
-		p := fmt.Sprintf("%s/%s", "assets", path)
-		ext := filepath.Ext(p)
-		switch ext {
-		case ".ogg":
-			m, err := loadOGG(p, SAMPLE_RATE)
-			if err != nil {
-				fmt.Println(err)
-			}
-			am.musicOgg[name] = m
-			return nil
-		case ".mp3":
-			m, err := loadMP3(p, SAMPLE_RATE)
-			if err != nil {
-				fmt.Println(err)
-			}
-			am.musicMp3[name] = m
-			return nil
-		default:
-			return fmt.Errorf("Wrong file type: %s", p)
-		}
+func DefaultAudioManager() *AudioManager {
+	if _defaultAudioManager == nil {
+		_defaultAudioManager = NewAudioManager()
 	}
+	return _defaultAudioManager
+}
+
+func SetDefaultAudioManager(am *AudioManager) {
+	_defaultAudioManager = am
+}
+
+func (am *AudioManager) RegisterSFX(name string, stream io.ReadSeeker) {
+	am.sfxStreams[name] = stream
+}
+
+func (am *AudioManager) RegisterMusic(name string, stream io.ReadSeeker) error {
+	sz, err := stream.Seek(0, io.SeekEnd)
+	if err != nil {
+		return err
+	}
+	_, _ = stream.Seek(0, io.SeekStart)
+	s := audio.NewInfiniteLoopF32(stream, sz)
+	am.musicStreams[name] = s
 	return nil
 }
 
-func (am *AudioManager) LoadSFX(mList map[string]string) error {
-	for name, path := range mList {
-		p := fmt.Sprintf("%s/%s", "assets", path)
-		ext := filepath.Ext(p)
-		switch ext {
-		case ".ogg":
-			m, err := loadOGG(p, SAMPLE_RATE)
-			if err != nil {
-				fmt.Println(err)
-			}
-			am.soundsOgg[name] = m
-			return nil
-		case ".mp3":
-			m, err := loadMP3(p, SAMPLE_RATE)
-			if err != nil {
-				fmt.Println(err)
-			}
-			am.soundsMp3[name] = m
-			return nil
-		default:
-			return fmt.Errorf("Wrong file type: %s", p)
-		}
+func (am *AudioManager) PlaySFX(name string) (*audio.Player, error) {
+	stream, ok := am.sfxStreams[name]
+	if !ok {
+		return nil, fmt.Errorf("SFX not registered: %s", name)
 	}
-	return nil
-}
-
-func (am *AudioManager) PlaySFX(name string) {
-
-}
-
-func (am *AudioManager) PlayMusic(name string) {
-
-}
-
-func loadOGG(filePath string, sampleRate int) (*vorbis.Stream, error) {
-	buf, err := os.ReadFile(filePath)
+	pl, err := am.context.NewPlayerF32(stream)
 	if err != nil {
 		return nil, err
 	}
-	stream, err := vorbis.DecodeWithSampleRate(sampleRate, bytes.NewReader(buf))
-	if err != nil {
-		return nil, err
-	}
-
-	return stream, nil
+	am.sfxPlayers = append(am.sfxPlayers, pl)
+	pl.Play()
+	return pl, nil
 }
 
-func loadMP3(filePath string, sampleRate int) (*mp3.Stream, error) {
-	buf, err := os.ReadFile(filePath)
+func (am *AudioManager) PlayMusic(name string) (*audio.Player, error) {
+	stream, ok := am.sfxStreams[name]
+	if !ok {
+		return nil, fmt.Errorf("Music not registered: %s", name)
+	}
+	pl, err := am.context.NewPlayerF32(stream)
 	if err != nil {
 		return nil, err
 	}
-	stream, err := mp3.DecodeWithSampleRate(sampleRate, bytes.NewReader(buf))
-	if err != nil {
-		return nil, err
-	}
-
-	return stream, nil
+	am.musicPlayer = pl
+	pl.Play()
+	return pl, nil
 }

@@ -2,17 +2,6 @@ package game
 
 import "github.com/felipelucio/go-pixel-dungeon/core"
 
-type RoomDef interface {
-	GetRoomType() string
-	GetCategories() *map[RoomSizeCategory][3]int
-	GetCatProbs() *map[RoomSizeCategory]float32
-
-	GetMinWidth() int
-	GetMinHeight() int
-	GetMaxWidth() int
-	GetMaxHeight() int
-}
-
 type RoomSizeCategory int
 
 const (
@@ -21,22 +10,44 @@ const (
 	RoomCategoryGiant
 )
 
+type RoomConfig struct {
+	Name string
+	// Min, Max, Value
+	Categories   map[RoomSizeCategory][3]int
+	SizeCatProbs map[RoomSizeCategory]float32
+	IsEntrance   bool
+	IsExit       bool
+	IsSpecial    bool
+}
+
 type Room struct {
 	core.Rect
 
+	Name       string
 	Neighbours []*Room
 	// connected []Door
-	Distance int
-	Price    int
+	Distance   int
+	Price      int
+	IsEntrance bool
+	IsExit     bool
+	IsSpecial  bool
 }
 
-func NewRoom(x, y, w, h int) *Room {
+func NewRoom() *Room {
 	return &Room{
 		Rect: core.Rect{
-			X1: x,
-			Y1: y,
-			X2: x + w,
-			Y2: y + h,
+			X1: 0,
+			Y1: 0,
+			X2: 0,
+			Y2: 0,
 		},
+		Name:       "Room",
+		Neighbours: make([]*Room, 4),
+		// connected: make([]*Door, 4),
+		Distance:   0,
+		Price:      0,
+		IsEntrance: false,
+		IsExit:     false,
+		IsSpecial:  false,
 	}
 }

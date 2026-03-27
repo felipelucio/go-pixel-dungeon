@@ -25,3 +25,7 @@ var Config config = config{
 	WinMode:      Windowed,
 	VsyncEnabled: false,
 }
+
+const (
+	GAME_TITLE = "Go Pixel Dungeon"
+)

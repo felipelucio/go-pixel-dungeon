@@ -1,13 +1,13 @@
-package core
+package game
 
 type GameState struct {
 	HeroName string
 	Depth    int
 }
 
-func NewGameState(heroName string) *GameState {
+func NewGameState() *GameState {
 	return &GameState{
-		HeroName: heroName,
+		HeroName: "heroName",
 		Depth:    1,
 	}
 }

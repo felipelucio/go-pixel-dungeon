@@ -1,43 +1,21 @@
 package scenes
 
 import (
-	"errors"
 	"fmt"
-	"image/color"
-	"log"
 
-	"github.com/felipelucio/go-pixel-dungeon/components"
 	"github.com/felipelucio/go-pixel-dungeon/core"
 	"github.com/felipelucio/go-pixel-dungeon/game"
-	"github.com/felipelucio/go-pixel-dungeon/systems"
 	"github.com/hajimehoshi/ebiten/v2"
 	"github.com/hajimehoshi/ebiten/v2/inpututil"
 )
 
 type TestScene struct {
-	world  game.World
-	player *core.Entity
-	ts     core.Tileset
-	camera core.Camera
+	level *game.Level
 }
 
 func (scene *TestScene) Init() error {
-	scene.world = game.NewWorld()
-	ok := scene.world.AddSystem(systems.MoveSystem, 10)
-	if ok != nil {
-		fmt.Printf("%s", ok.Error())
-		return errors.New(ok.Error())
-	}
-
-	scene.player = scene.world.NewEntity()
-	scene.world.AddComponent(scene.player, &components.Position{})
-	tilePath := fmt.Sprintf("%s/%s", game.Config.AssetsPath, game.AssetTiles["TILES_SEWERS"])
-	ts, err := core.NewTileset("ts0", tilePath, 16, 16)
-	if err != nil {
-		log.Fatal(err)
-	}
-	scene.ts = ts
-	scene.camera = core.NewCamera(768, 432, 0.5, 2.0, true)
+	sess := game.GetSession()
+	// scene.camera = core.NewCamera(768, 432, 0.5, 2.0, true)
 
 	return nil
 }
@@ -49,8 +27,7 @@ func (scene *TestScene) Resume() {
 }
 
 func (scene *TestScene) Update() error {
-	g := game.GetSession().Game()
-	ebiten.SetWindowTitle(fmt.Sprintf("%s (FPS: %.2f | TPS: %.2f)", g.Title, ebiten.ActualFPS(), ebiten.ActualTPS()))
+	ebiten.SetWindowTitle(fmt.Sprintf("%s (FPS: %.2f | TPS: %.2f)", game.GAME_TITLE, ebiten.ActualFPS(), ebiten.ActualTPS()))
 
 	dir := core.NewVector2(0.0, 0.0)
 	if inpututil.IsKeyJustPressed(ebiten.KeyA) {
@@ -65,31 +42,31 @@ func (scene *TestScene) Update() error {
 	}
 
 	if inpututil.IsKeyJustPressed(ebiten.KeyUp) || inpututil.IsKeyJustPressed(ebiten.KeyArrowUp) {
-		scene.camera.SmoothScaleBy(0.25, 0.2)
+		// scene.camera.SmoothScaleBy(0.25, 0.2)
 	} else if inpututil.IsKeyJustPressed(ebiten.KeyDown) || inpututil.IsKeyJustPressed(ebiten.KeyArrowDown) {
-		scene.camera.SmoothScaleBy(-0.25, 0.2)
+		// scene.camera.SmoothScaleBy(-0.25, 0.2)
 	}
 
 	if dir.X != 0 || dir.Y != 0 {
-		scene.camera.SmoothMoveBy(int(16*dir.X), int(16*dir.Y), 0.2)
+		// scene.camera.SmoothMoveBy(int(16*dir.X), int(16*dir.Y), 0.2)
 	}
 
-	scene.camera.Update(1.0 / 60.0)
-	return scene.world.Update()
+	// scene.camera.Update(1.0 / 60.0)
+	return nil
 }
 
 func (scene *TestScene) Draw(screen *ebiten.Image) error {
-	buff := scene.camera.GetBuffer()
-	buff.Clear()
-	buff.Fill(color.RGBA{255, 128, 128, 255})
+	// buff := scene.camera.GetBuffer()
+	// buff.Clear()
+	// buff.Fill(color.RGBA{255, 128, 128, 255})
 	// comp := scene.player.GetComponent("Position")
 	// pos_comp, ok := comp.(*components.Position)
 	// if ok {
 	// 	p_str := fmt.Sprintf("Player: (%d, %d)", pos_comp.X, pos_comp.Y)
 	// 	ebitenutil.DebugPrintAt(buff, p_str, 0, 20)
 	// }
-	scene.drawMap(buff)
-	scene.camera.Draw(screen)
+	// scene.drawMap(buff)
+	// scene.camera.Draw(screen)
 	return nil
 }
 

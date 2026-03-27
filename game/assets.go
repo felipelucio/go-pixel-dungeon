@@ -1,8 +1,8 @@
 package game
 
 var AssetEffects map[string]string = map[string]string{
-	"FIREBALL_TALL":  "effects/fireball_tall.png",
-	"FIREBALL_SHORT": "effects/fireball_short.png",
+	"FIREBALL_TALL":  "effects/fireball-tall.png",
+	"FIREBALL_SHORT": "effects/fireball-short.png",
 	"SPECKS":         "effects/specks.png",
 	"EFFECTS":        "effects/effects.png",
 	"SPELL_ICONS":    "effects/spell_icons.png",
